@@ -14,7 +14,7 @@ public class Employee {
 	private static final int GRADE_1_SALARY = 3000000;
     private static final int GRADE_2_SALARY = 5000000;
     private static final int GRADE_3_SALARY = 7000000;
-
+	
     public Employee(EmployeeInfo employeeInfo) {
         this.employeeInfo = employeeInfo;
         this.childNames = new LinkedList<>();
