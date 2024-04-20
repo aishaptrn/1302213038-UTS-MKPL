@@ -14,6 +14,10 @@ public class Employee {
 	private static final int GRADE_1_SALARY = 3000000;
     private static final int GRADE_2_SALARY = 5000000;
     private static final int GRADE_3_SALARY = 7000000;
+
+	private static final int NON_TAXABLE_INCOME_LIMIT = 54000000;
+    private static final int PER_CHILD_DEDUCTION = 4500000;
+    private static final int SPOUSE_DEDUCTION = 1500000;
 	
     public Employee(EmployeeInfo employeeInfo) {
         this.employeeInfo = employeeInfo;
@@ -23,19 +27,19 @@ public class Employee {
 	
 	public void setMonthlySalary(int grade) {	
 		if (grade == 1) {
-			employeeInfo.setMonthlySalary(3000000);
+			employeeInfo.setMonthlySalary(GRADE_1_SALARY);
 			if (employeeInfo.isForeigner()) {
 				int salary = (int) (3000000 * 1.5);
 				employeeInfo.setMonthlySalary(salary);
 			}
 		}else if (grade == 2) {
-			employeeInfo.setMonthlySalary(5000000);
+			employeeInfo.setMonthlySalary(GRADE_2_SALARY);
 			if (employeeInfo.isForeigner()) {
 				int salary = (int) (3000000 * 1.5);
 				employeeInfo.setMonthlySalary(salary);
 			}
 		}else if (grade == 3) {
-			employeeInfo.setMonthlySalary(7000000);
+			employeeInfo.setMonthlySalary(GRADE_3_SALARY);
 			if (employeeInfo.isForeigner()) {
 				int salary = (int) (3000000 * 1.5);
 				employeeInfo.setMonthlySalary(salary);
@@ -48,16 +52,25 @@ public class Employee {
 		employeeInfo.setSpouseIdNumber(spouseIdNumber);
 	}
 
-	public int getAnnualIncomeTax() {
-		LocalDate date = LocalDate.now();
+	private int calculateTax() {
+        int totalIncome = employeeInfo.getMonthlySalary() * employeeInfo.getMonthWorkingInYear() + employeeInfo.getOtherMonthlyIncome() * employeeInfo.getMonthWorkingInYear();
+        int totalDeductible = employeeInfo.getAnnualDeductible();
+        if (employeeInfo.getSpouseIdNumber().equals("")) {
+            totalDeductible += SPOUSE_DEDUCTION;
+        }
+        totalDeductible += childIdNumbers.size() * PER_CHILD_DEDUCTION;
+        int taxableIncome = Math.max(0, totalIncome - totalDeductible);
+        return (int) (taxableIncome * 0.05);
+    }
 
-		if (date.getYear() == employeeInfo.getJoinDate().getYear()) {
-			int month = date.getMonthValue() - employeeInfo.getJoinDate().getMonthValue();
+    public int getAnnualIncomeTax() {
+        LocalDate date = LocalDate.now();
+        if (date.getYear() == employeeInfo.getJoinDate().getYear()) {
+            int month = date.getMonthValue() - employeeInfo.getJoinDate().getMonthValue();
 			employeeInfo.setMonthWorkingInYear(month);
-		}else {
-			employeeInfo.setMonthWorkingInYear(12);
-		}
-
-		return TaxFunction.calculateTax(employeeInfo.getMonthlySalary(), employeeInfo.getOtherMonthlyIncome(), employeeInfo.getMonthWorkingInYear(), employeeInfo.getAnnualDeductible(), employeeInfo.getSpouseIdNumber().equals(""), childIdNumbers.size());
-	}
+        } else {
+            employeeInfo.setMonthWorkingInYear(12);;
+        }
+        return calculateTax();
+    }
 }
